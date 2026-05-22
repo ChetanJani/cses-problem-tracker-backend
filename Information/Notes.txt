@@ -1,0 +1,10 @@
+Next:
+constant file for status
+Database fully prepare : 400 intems
+[DB : graph : 10-40, DP : 70-80]
+
+
+
+
+Later:
+CORS add

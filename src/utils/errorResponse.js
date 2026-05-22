@@ -1,0 +1,33 @@
+class errorResponse extends Error {
+    constructor(
+        statusCode,
+        message = "Something went wrong",
+        errors = [],
+        data = {},
+        stack = "",
+    ) {
+        super(message);
+        this.statusCode = statusCode;
+        this.message = message;
+        this.data = data;
+        this.isSuccess = false;
+        this.errors = errors;
+        if (stack) {
+            this.stack = stack;
+        } else {
+            Error.captureStackTrace(this, this.constructor);
+        }
+    }
+
+    toJSON(){
+        return {
+            statusCode: this.statusCode,
+            message: this.message,
+            data: this.data,
+            isSuccess: this.isSuccess,
+            errors: this.errors,
+        };
+    }
+}
+
+export default errorResponse;
