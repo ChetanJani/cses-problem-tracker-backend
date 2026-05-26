@@ -18,11 +18,16 @@ app.use("/cses", csesRoutes);
 
 
 app.use((err, req, res, next) => {
+    let error = err;
     if (!(err instanceof errorResponse)) {
-        err.message = err.message || "Internal Server Error";
+        error = new errorResponse(
+            err.statusCode || 500,
+            err.message || "Internal Server Error",
+            err.errors || [],
+        );
     }
-    err.statusCode = err.statusCode || 500;
-    res.status(err.statusCode).json(err);
+    error.statusCode = err.statusCode || 500;
+    res.status(error.statusCode).json(error);
 });
 
 export default app;

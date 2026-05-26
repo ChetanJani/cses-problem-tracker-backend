@@ -1,4 +1,5 @@
 import mongoose,{ Schema } from "mongoose";
+import { listOfAvailableStatuses } from "../utils/constants.js";
 
 const csesSchema = new Schema(
     {
@@ -6,7 +7,13 @@ const csesSchema = new Schema(
         title: String,
         category: String,
         url: String,
-        status: String,
+        status: {
+            type: String,
+            enum:{
+                values: listOfAvailableStatuses,
+                message: "{VALUE} is not a valid status"
+            }
+        },
         topic: String,
     },
     {
