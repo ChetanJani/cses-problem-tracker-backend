@@ -53,8 +53,8 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
     const categories = req.body?.categories;
     const statuses = req.body?.status;
 
-    if (!categories || categories.length === 0) {
-        return next(new errorResponse(400, "Please select category", []));
+    if (!categories.length || !statuses?.length) {
+        return next(new errorResponse(400, "Please select category & status", []));
     }
 
     if (
@@ -84,6 +84,28 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
         ),
     );
 });
+
+const Categories = asyncHandler(async (req, res, next) => {
+    const categories = await Problem.aggregate([
+        {
+            $group: {
+                _id: "$category",
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                category: "$_id",
+            },
+        },
+    ]);
+
+    const categoryList = categories.map((c) => c.category);
+
+    return res
+        .status(200)
+        .json(new successResponse(200, "All Categories Fetched", categoryList));
+})
 
 const problemStatusChange = asyncHandler(async (req, res, next) => {
     const problemTitle = req.body.title;
@@ -125,4 +147,9 @@ const problemStatusChange = asyncHandler(async (req, res, next) => {
         );
 });
 
-export { randomProblemGenerator, listOfProblems, problemStatusChange };
+export {
+    randomProblemGenerator,
+    listOfProblems,
+    problemStatusChange,
+    Categories,
+};

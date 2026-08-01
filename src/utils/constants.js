@@ -5,7 +5,5 @@ const availableStatuses = {
 }
 
 const listOfAvailableStatuses = Object.values(availableStatuses)
-console.log(listOfAvailableStatuses);
-
 
 export { availableStatuses, listOfAvailableStatuses };
