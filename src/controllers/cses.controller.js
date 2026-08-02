@@ -67,8 +67,9 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
 
     const problems = await Problem.find({
         category: { $in: categories },
-        status:{ $in : statuses}
+        status: { $in: statuses },
     })
+        .sort({ id: 1 })
         .select("-_id -id -topic")
         .lean();
     
@@ -90,6 +91,14 @@ const Categories = asyncHandler(async (req, res, next) => {
         {
             $group: {
                 _id: "$category",
+                first_id: {
+                    $min: "$id",
+                },
+            },
+        },
+        {
+            $sort: {
+                first_id: 1,
             },
         },
         {
@@ -105,6 +114,10 @@ const Categories = asyncHandler(async (req, res, next) => {
     return res
         .status(200)
         .json(new successResponse(200, "All Categories Fetched", categoryList));
+})
+
+const statusesList = asyncHandler(async (req, res, next) => {
+    return res.status(200).json(new successResponse(200, "Statuses Feched Successfully", listOfAvailableStatuses))
 })
 
 const problemStatusChange = asyncHandler(async (req, res, next) => {
@@ -147,9 +160,14 @@ const problemStatusChange = asyncHandler(async (req, res, next) => {
         );
 });
 
+const searchByTitleOrLink = asyncHandler(async (res, res, next) => {
+    
+})
+
 export {
     randomProblemGenerator,
     listOfProblems,
     problemStatusChange,
     Categories,
+    statusesList,
 };

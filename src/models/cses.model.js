@@ -1,4 +1,4 @@
-import mongoose,{ Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { listOfAvailableStatuses } from "../utils/constants.js";
 
 const csesSchema = new Schema(
@@ -9,10 +9,10 @@ const csesSchema = new Schema(
         url: String,
         status: {
             type: String,
-            enum:{
+            enum: {
                 values: listOfAvailableStatuses,
-                message: "{VALUE} is not a valid status"
-            }
+                message: "{VALUE} is not a valid status",
+            },
         },
         topic: String,
     },
@@ -20,5 +20,7 @@ const csesSchema = new Schema(
         collection: "cses",
     },
 );
+
+csesSchema.index({ id: 1 });
 
 export const Problem = mongoose.model("Problem", csesSchema);

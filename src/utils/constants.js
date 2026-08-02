@@ -1,7 +1,8 @@
 const availableStatuses = {
     UNSOLVED : "unsolved",
+    ATTEMPTED : "attempted",
     SOLVED : "solved",
-    ATTEMPTED : "attempted"
+    
 }
 
 const listOfAvailableStatuses = Object.values(availableStatuses)
