@@ -42,7 +42,7 @@ const randomProblemGenerator = asyncHandler(async (req, res, next) => {
 
     const selectedProblem = await Problem.findById(
         selectedProblemDetails._id,
-    ).select("-_id -id -topic -category");
+    ).select("-_id -id -category");
 
     res.status(200).json(
         new successResponse(200, "Random Problem Generated", [selectedProblem]),
@@ -54,7 +54,9 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
     const statuses = req.body?.status;
 
     if (!categories.length || !statuses?.length) {
-        return next(new errorResponse(400, "Please select category & status", []));
+        return next(
+            new errorResponse(400, "Please select category & status", []),
+        );
     }
 
     if (
@@ -70,10 +72,10 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
         status: { $in: statuses },
     })
         .sort({ id: 1 })
-        .select("-_id -id -topic")
+        .select("-_id -id")
         .lean();
-    
-    if(!problems || problems.length === 0){
+
+    if (!problems || problems.length === 0) {
         return next(new errorResponse(400, "Please provide valid categories"));
     }
 
@@ -114,11 +116,19 @@ const Categories = asyncHandler(async (req, res, next) => {
     return res
         .status(200)
         .json(new successResponse(200, "All Categories Fetched", categoryList));
-})
+});
 
 const statusesList = asyncHandler(async (req, res, next) => {
-    return res.status(200).json(new successResponse(200, "Statuses Feched Successfully", listOfAvailableStatuses))
-})
+    return res
+        .status(200)
+        .json(
+            new successResponse(
+                200,
+                "Statuses Feched Successfully",
+                listOfAvailableStatuses,
+            ),
+        );
+});
 
 const problemStatusChange = asyncHandler(async (req, res, next) => {
     const problemTitle = req.body.title;
@@ -146,7 +156,7 @@ const problemStatusChange = asyncHandler(async (req, res, next) => {
     await problem.save({ validateBeforeSave: false });
 
     const updatedStatusProblem = await Problem.findById(problem._id).select(
-        "-_id -id -topic -category",
+        "-_id -id -category",
     );
 
     return res
@@ -160,9 +170,65 @@ const problemStatusChange = asyncHandler(async (req, res, next) => {
         );
 });
 
-const searchByTitleOrLink = asyncHandler(async (res, res, next) => {
+const searchByTitleOrLink = asyncHandler(async (req, res, next) => {
     
-})
+    const problemTitle = req.query.title;
+    const problemUrl = req.query.url;
+    // "/task\/(\d+)/"
+    if (problemTitle) {
+        const problemList = await Problem.find({
+            title: { $regex: problemTitle, $options: "i" },
+        }).select("-_id -id").lean();
+        
+        if (!problemList?.length) {
+            return res
+            .status(400)
+            .json(new errorResponse(400, "Please Enter Valid Title"));
+        }
+        
+        return res
+        .status(200)
+        .json(
+            new successResponse(
+                200,
+                "Problems Fetched Successfully",
+                problemList,
+            ),
+        );
+    } else {
+        const linkData = problemUrl.match(/task\/(\d+)/);
+        if (!linkData?.length) {
+            return res
+                .status(400)
+                .json(new errorResponse(400, "Please Enter Valid Title/Link", linkData));
+        }
+
+        const problemId = linkData[1];
+
+        const problem = await Problem.findOne({
+            url: { $regex: `task/${problemId}$` },
+        })
+            .select("-_id -id")
+            .lean();
+
+        if (!problem) {
+            return res
+                .status(400)
+                .json(new errorResponse(400, "Please Enter Valid Link"));
+        }
+
+        return res
+            .status(200)
+            .json(
+                new successResponse(
+                    200,
+                    "Problems Fetched Successfully",
+                    problem,
+                ),
+            );
+        
+    }
+});
 
 export {
     randomProblemGenerator,
@@ -170,4 +236,5 @@ export {
     problemStatusChange,
     Categories,
     statusesList,
+    searchByTitleOrLink,
 };
