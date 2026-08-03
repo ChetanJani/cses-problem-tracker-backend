@@ -1,4 +1,10 @@
 import { Router } from "express";  
+import {validateRequest} from "../middlewares/validate.middleware.js"
+import {
+    randomProblemValidator,
+    listProblemsValidator,
+    statusChangeValidator,
+} from "../validators/cses.validator.js";
 import {
     randomProblemGenerator,
     listOfProblems,
@@ -10,12 +16,18 @@ import {
 
 const csesRoutes = Router();
 
-csesRoutes.route("/random").post(randomProblemGenerator);
-csesRoutes.route("/list").post(listOfProblems);
+csesRoutes.route("/random").post(randomProblemValidator(), validateRequest ,randomProblemGenerator);
+csesRoutes
+    .route("/list")
+    .post(listProblemsValidator(), validateRequest, listOfProblems);
 csesRoutes.route("/categories").get(Categories);
 csesRoutes.route("/statuses").get(statusesList);
-csesRoutes.route("/title-link").get(searchByTitleOrLink);
-csesRoutes.route("/status-change").post(problemStatusChange);
+csesRoutes
+    .route("/title-link")
+    .get(searchByTitleOrLink);
+csesRoutes
+    .route("/status-change")
+    .post(statusChangeValidator(), validateRequest, problemStatusChange);
 
 export default csesRoutes;
 

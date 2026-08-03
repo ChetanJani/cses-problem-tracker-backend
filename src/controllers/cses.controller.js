@@ -10,8 +10,14 @@ import {
 const randomProblemGenerator = asyncHandler(async (req, res, next) => {
     const categories = req.body?.categories;
 
-    if (!categories || categories.length === 0) {
-        return next(new errorResponse(400, "Please select category", []));
+    const categoriesList = await Problem.distinct("category", {
+        category: { $in: categories },
+    });
+
+    if (categories.length != categoriesList.length) {
+        return res
+            .status(400)
+            .json(new errorResponse(400, "Categories are invalid"));
     }
 
     const problems = await Problem.find({
@@ -19,11 +25,9 @@ const randomProblemGenerator = asyncHandler(async (req, res, next) => {
         status: "unsolved",
     }).lean();
 
-    if (!problems) {
-        return next(new errorResponse(400, "Please provide valid categories"));
-    }
-
     const totalProblems = problems.length;
+    //0 means either category is false, or all problem solved
+    //later add 1 logic of Problem.exist
 
     if (totalProblems === 0) {
         return res
@@ -53,19 +57,13 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
     const categories = req.body?.categories;
     const statuses = req.body?.status;
 
-    if (!categories.length || !statuses?.length) {
-        return next(
-            new errorResponse(400, "Please select category & status", []),
-        );
-    }
-
-    if (
-        !statuses.every((st) => {
-            return listOfAvailableStatuses.includes(st);
-        })
-    ) {
-        return next(new errorResponse(400, "Please provide valid status"));
-    }
+    // if (
+    //     !statuses.every((st) => {
+    //         return listOfAvailableStatuses.includes(st);
+    //     })
+    // ) {
+    //     return next(new errorResponse(400, "Please provide valid status"));
+    // }
 
     const problems = await Problem.find({
         category: { $in: categories },
@@ -75,7 +73,7 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
         .select("-_id -id")
         .lean();
 
-    if (!problems || problems.length === 0) {
+    if (!problems?.length) {
         return next(new errorResponse(400, "Please provide valid categories"));
     }
 
@@ -131,33 +129,26 @@ const statusesList = asyncHandler(async (req, res, next) => {
 });
 
 const problemStatusChange = asyncHandler(async (req, res, next) => {
-    const problemTitle = req.body.title;
+    const problemId = req.body.id;
+    console.log(typeof problemId);
     const changedStatus = req.body.status;
 
-    if (!problemTitle) {
-        return next(new errorResponse(400, "Please select problem title"));
-    }
-
-    if (!changedStatus || !listOfAvailableStatuses.includes(changedStatus)) {
-        return next(new errorResponse(400, "Please provide valid status"));
-    }
-
     const problem = await Problem.findOne({
-        title: problemTitle,
+        id: problemId,
     });
 
     if (!problem) {
         return next(
-            new errorResponse(400, "Please select appropriate problem title"),
+            new errorResponse(400, "Please select appropriate problem"),
         );
     }
 
     problem.status = changedStatus;
     await problem.save({ validateBeforeSave: false });
 
-    const updatedStatusProblem = await Problem.findById(problem._id).select(
-        "-_id -id -category",
-    );
+    const updatedStatusProblem = await Problem.findById(problem._id)
+        .select("-_id -id -category")
+        .lean();
 
     return res
         .status(201)
@@ -171,36 +162,43 @@ const problemStatusChange = asyncHandler(async (req, res, next) => {
 });
 
 const searchByTitleOrLink = asyncHandler(async (req, res, next) => {
-    
-    const problemTitle = req.query.title;
-    const problemUrl = req.query.url;
-    // "/task\/(\d+)/"
+    const problemTitle = req.query.title?.trim();
+    const problemUrl = req.query.url?.trim();
+
     if (problemTitle) {
         const problemList = await Problem.find({
             title: { $regex: problemTitle, $options: "i" },
-        }).select("-_id -id").lean();
-        
+        })
+            .select("-_id -id")
+            .lean();
+
         if (!problemList?.length) {
             return res
-            .status(400)
-            .json(new errorResponse(400, "Please Enter Valid Title"));
+                .status(400)
+                .json(new errorResponse(400, "Please Enter Valid Title"));
         }
-        
+
         return res
-        .status(200)
-        .json(
-            new successResponse(
-                200,
-                "Problems Fetched Successfully",
-                problemList,
-            ),
-        );
+            .status(200)
+            .json(
+                new successResponse(
+                    200,
+                    "Problems Fetched Successfully",
+                    problemList,
+                ),
+            );
     } else {
         const linkData = problemUrl.match(/task\/(\d+)/);
         if (!linkData?.length) {
             return res
                 .status(400)
-                .json(new errorResponse(400, "Please Enter Valid Title/Link", linkData));
+                .json(
+                    new errorResponse(
+                        400,
+                        "Please Enter Valid Title/Link",
+                        linkData,
+                    ),
+                );
         }
 
         const problemId = linkData[1];
@@ -226,7 +224,6 @@ const searchByTitleOrLink = asyncHandler(async (req, res, next) => {
                     problem,
                 ),
             );
-        
     }
 });
 
