@@ -76,7 +76,9 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
         .lean();
 
     if (!problems?.length) {
-        return res.status(200).json(new errorResponse(200, "No Problems found"));
+        return res
+            .status(200)
+            .json(new errorResponse(200, "No Problems found"));
     }
 
     res.status(200).json(
@@ -194,11 +196,7 @@ const searchByTitleOrLink = asyncHandler(async (req, res, next) => {
             return res
                 .status(400)
                 .json(
-                    new errorResponse(
-                        400,
-                        "Please Enter Valid Link",
-                        linkData,
-                    ),
+                    new errorResponse(400, "Please Enter Valid Link", linkData),
                 );
         }
 
@@ -219,14 +217,14 @@ const searchByTitleOrLink = asyncHandler(async (req, res, next) => {
         return res
             .status(200)
             .json(
-                new successResponse(
-                    200,
-                    "Problem Fetched Successfully",
-                    [problem],
-                ),
+                new successResponse(200, "Problem Fetched Successfully", [
+                    problem,
+                ]),
             );
-    } else{
-        return res.status(400).json(new errorResponse(400, "Provide valid Title or URL"));
+    } else {
+        return res
+            .status(400)
+            .json(new errorResponse(400, "Provide valid Title or URL"));
     }
 });
 

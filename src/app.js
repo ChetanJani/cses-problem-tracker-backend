@@ -2,9 +2,16 @@ import express from "express";
 import errorResponse from "./utils/errorResponse.js";
 import successResponse from "./utils/successResponse.js";
 import csesRoutes from "./routes/cses.routes.js";
+import cors from "cors"
 
 const app = express();
 
+const corsOptions = {
+    origin: process.env.CSES_CLIENT_ORIGIN,
+    methods: ["GET", "POST"],
+};
+
+app.use(cors());
 app.use(express.static("public"));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
