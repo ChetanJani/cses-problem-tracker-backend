@@ -1,14 +1,16 @@
+import "./env.js";
 import express from "express";
 import errorResponse from "./utils/errorResponse.js";
 import successResponse from "./utils/successResponse.js";
 import csesRoutes from "./routes/cses.routes.js";
-import cors from "cors"
+import cors from "cors";
 
 const app = express();
 
 const corsOptions = {
     origin: process.env.CSES_CLIENT_ORIGIN,
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
@@ -22,7 +24,6 @@ app.route("/healthcheck").get((req, res, next) => {
     );
 });
 app.use("/cses", csesRoutes);
-
 
 app.use((err, req, res, next) => {
     let error = err;
