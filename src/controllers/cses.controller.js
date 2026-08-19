@@ -46,7 +46,7 @@ const randomProblemGenerator = asyncHandler(async (req, res, next) => {
 
     const selectedProblem = await Problem.findById(
         selectedProblemDetails._id,
-    ).select("-_id -id -category");
+    ).select("-_id -category");
 
     res.status(200).json(
         new successResponse(200, "Random Problem Generated", [selectedProblem]),
@@ -72,7 +72,7 @@ const listOfProblems = asyncHandler(async (req, res, next) => {
         status: { $in: statuses },
     })
         .sort({ id: 1 })
-        .select("-_id -id")
+        .select("-_id")
         .lean();
 
     if (!problems?.length) {
@@ -150,7 +150,7 @@ const problemStatusChange = asyncHandler(async (req, res, next) => {
     await problem.save({ validateBeforeSave: false });
 
     const updatedStatusProblem = await Problem.findById(problem._id)
-        .select("-_id -id -category")
+        .select("-_id -category")
         .lean();
 
     return res
@@ -172,7 +172,7 @@ const searchByTitleOrLink = asyncHandler(async (req, res, next) => {
         const problemList = await Problem.find({
             title: { $regex: problemTitle, $options: "i" },
         })
-            .select("-_id -id")
+            .select("-_id")
             .lean();
 
         if (!problemList?.length) {
@@ -205,7 +205,7 @@ const searchByTitleOrLink = asyncHandler(async (req, res, next) => {
         const problem = await Problem.findOne({
             url: { $regex: `task/${problemId}$` },
         })
-            .select("-_id -id")
+            .select("-_id")
             .lean();
 
         if (!problem) {
