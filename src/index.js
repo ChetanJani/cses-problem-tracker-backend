@@ -7,7 +7,7 @@ const port = process.env.PORT || 8081;
 
 connectDatabase()
     .then(() => {
-        app.listen(port, "localhost", () => {
+        app.listen(port, () => {
             console.log(
                 `Application is running on ` +
                     chalk.yellow(`'http://localhost:${port}'`),
